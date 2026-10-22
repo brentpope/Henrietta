@@ -1,17 +1,18 @@
-// Hooray for Henrietta - Modern JavaScript Game
-class HenriettaGame {
+// Goofy Henrietta's Railroad - Modern JavaScript Game
+class HenriettaRailroad {
   constructor() {
     this.currentScreen = 'title-screen';
     this.ageLevel = '5-8';
-    this.currentStep = 0;
-    this.completedSteps = [];
     this.score = 0;
-    this.lives = 3;
-    this.timePerQuestion = 60;
-    this.timerInterval = null;
-    this.currentTime = 60;
+    this.correctAnswers = 0;
+    this.totalQuestions = 10;
+    this.trainSpeed = 5;
     this.soundEnabled = true;
     this.currentProblem = null;
+    this.trainPosition = -200;
+    this.timeLeft = 100; // percentage
+    this.timeInterval = null;
+    this.questionTimer = null;
     
     this.init();
   }
@@ -19,7 +20,7 @@ class HenriettaGame {
   init() {
     this.bindEvents();
     this.loadSettings();
-    this.updateLevelDisplay();
+    this.setupSpeedSlider();
   }
   
   bindEvents() {
@@ -27,8 +28,7 @@ class HenriettaGame {
     document.querySelectorAll('.level-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         this.ageLevel = btn.dataset.level;
-        this.showScreen('level-screen');
-        this.updateLevelDisplay();
+        this.startGame();
       });
     });
     
@@ -36,20 +36,11 @@ class HenriettaGame {
       this.openSettings();
     });
     
-    // Level screen
-    document.getElementById('btn-back-title').addEventListener('click', () => {
-      this.showScreen('title-screen');
-    });
-    
-    document.querySelectorAll('.adventure-step.unlocked').forEach(step => {
-      // Will be updated dynamically
-    });
-    
     // Game screen
-    document.getElementById('btn-back-levels').addEventListener('click', () => {
-      this.stopTimer();
-      this.showScreen('level-screen');
-      this.updateLevelMap();
+    document.getElementById('btn-back-title').addEventListener('click', () => {
+      this.stopTimers();
+      this.showScreen('title-screen');
+      this.resetGame();
     });
     
     // Victory screen
@@ -67,89 +58,96 @@ class HenriettaGame {
       this.closeSettings();
     });
     
-    document.getElementById('setting-timer').addEventListener('change', (e) => {
-      this.timePerQuestion = parseInt(e.target.value);
-      localStorage.setItem('henrietta_timer', e.target.value);
-    });
-    
     document.getElementById('setting-sound').addEventListener('change', (e) => {
       this.soundEnabled = e.target.value === 'on';
-      localStorage.setItem('henrietta_sound', e.target.value);
+      localStorage.setItem('henrietta_railroad_sound', e.target.value);
+    });
+  }
+  
+  setupSpeedSlider() {
+    const slider = document.getElementById('setting-speed');
+    const display = document.getElementById('speed-display');
+    
+    slider.addEventListener('input', (e) => {
+      this.trainSpeed = parseInt(e.target.value);
+      display.textContent = this.trainSpeed;
+      localStorage.setItem('henrietta_railroad_speed', e.target.value);
     });
   }
   
   loadSettings() {
-    const timer = localStorage.getItem('henrietta_timer');
-    if (timer) {
-      this.timePerQuestion = parseInt(timer);
-      document.getElementById('setting-timer').value = timer;
+    const speed = localStorage.getItem('henrietta_railroad_speed');
+    if (speed) {
+      this.trainSpeed = parseInt(speed);
+      document.getElementById('setting-speed').value = speed;
+      document.getElementById('speed-display').textContent = speed;
     }
     
-    const sound = localStorage.getItem('henrietta_sound');
+    const sound = localStorage.getItem('henrietta_railroad_sound');
     if (sound) {
       this.soundEnabled = sound === 'on';
       document.getElementById('setting-sound').value = sound;
     }
   }
   
-  updateLevelDisplay() {
-    document.getElementById('current-age-level').textContent = 
-      this.ageLevel === '5-8' ? 'Ages 5-8' : 'Ages 9-12';
-    this.updateLevelMap();
+  startGame() {
+    this.resetGame();
+    this.showScreen('getready-screen');
+    this.playGetReady();
   }
   
-  updateLevelMap() {
-    const steps = document.querySelectorAll('.adventure-step');
-    steps.forEach((step, index) => {
-      const stepNum = index + 1;
-      step.classList.remove('unlocked', 'completed');
-      
-      if (this.completedSteps.includes(stepNum)) {
-        step.classList.add('completed');
-        step.querySelector('.step-status').textContent = '✅';
-        step.onclick = () => this.playStep(stepNum);
-      } else if (stepNum === this.completedSteps.length + 1) {
-        step.classList.add('unlocked');
-        step.querySelector('.step-status').textContent = '▶️';
-        step.onclick = () => this.playStep(stepNum);
+  playGetReady() {
+    let count = 3;
+    const countdownEl = document.getElementById('countdown');
+    countdownEl.textContent = count;
+    
+    if (this.soundEnabled) {
+      this.playSound('whistle');
+    }
+    
+    const countdownInterval = setInterval(() => {
+      count--;
+      if (count > 0) {
+        countdownEl.textContent = count;
+        if (this.soundEnabled && count === 1) {
+          this.playSound('whistle');
+        }
       } else {
-        step.querySelector('.step-status').textContent = '🔒';
-        step.onclick = null;
+        clearInterval(countdownInterval);
+        countdownEl.textContent = 'GO!';
+        setTimeout(() => {
+          this.showScreen('game-screen');
+          this.updateGameUI();
+          this.generateProblem();
+          this.startTrain();
+          this.startQuestionTimer();
+        }, 1000);
       }
-    });
-    
-    document.getElementById('items-recovered').textContent = this.completedSteps.length;
+    }, 1000);
   }
   
-  playStep(stepNum) {
-    this.currentStep = stepNum;
-    this.showScreen('game-screen');
-    this.setupGameForStep(stepNum);
-    this.generateProblem();
-    this.startTimer();
-    this.updateGameUI();
-  }
-  
-  setupGameForStep(stepNum) {
-    const step = document.querySelector(`.adventure-step[data-step="${stepNum}"]`);
-    const operation = step.dataset.operation;
-    this.currentOperation = operation;
+  startTrain() {
+    const trainContainer = document.getElementById('train-container');
+    this.trainPosition = -200;
+    trainContainer.style.left = this.trainPosition + 'px';
     
-    // Update scene text based on step
-    const sceneTexts = {
-      1: "Henrietta is chasing John the Parrot to get Henry's clothes back!",
-      2: "Rowing across the river to catch up with the mischievous bird!",
-      3: "Jumping over hurdles in hot pursuit of John the Parrot!",
-      4: "The final rescue! Solve these to free Henry from the custard!"
+    // Animate train movement
+    const moveTrain = () => {
+      if (this.currentScreen !== 'game-screen') return;
+      
+      const speedFactor = this.trainSpeed / 5;
+      this.trainPosition += speedFactor * 2;
+      trainContainer.style.left = this.trainPosition + 'px';
+      
+      // If train passes station
+      if (this.trainPosition > 400) {
+        this.trainPosition = -200;
+        trainContainer.style.left = this.trainPosition + 'px';
+      }
+      
+      setTimeout(moveTrain, 50);
     };
-    
-    document.getElementById('scene-text').textContent = sceneTexts[stepNum];
-    
-    // Update scene characters
-    document.getElementById('scene-henrietta').style.opacity = '1';
-    document.getElementById('scene-parrot').style.opacity = '1';
-    document.getElementById('scene-henry').style.opacity = stepNum === 4 ? '1' : '0.3';
-    document.getElementById('custard-tank').style.display = stepNum === 4 ? 'block' : 'none';
+    moveTrain();
   }
   
   generateProblem() {
@@ -157,13 +155,13 @@ class HenriettaGame {
     
     if (this.ageLevel === '5-8') {
       // Addition and subtraction only
-      if (this.currentOperation === 'add' || Math.random() < 0.6) {
-        num1 = Math.floor(Math.random() * 20) + 1;
-        num2 = Math.floor(Math.random() * 20) + 1;
+      if (Math.random() < 0.6) {
+        num1 = Math.floor(Math.random() * 15) + 1;
+        num2 = Math.floor(Math.random() * 15) + 1;
         answer = num1 + num2;
         problemText = `${num1} + ${num2} = ?`;
       } else {
-        num1 = Math.floor(Math.random() * 30) + 10;
+        num1 = Math.floor(Math.random() * 25) + 10;
         num2 = Math.floor(Math.random() * num1) + 1;
         answer = num1 - num2;
         problemText = `${num1} - ${num2} = ?`;
@@ -171,15 +169,15 @@ class HenriettaGame {
     } else {
       // Ages 9-12 - all operations
       const ops = ['add', 'sub', 'mul', 'div'];
-      const op = this.currentOperation === 'div' ? 'div' : ops[Math.floor(Math.random() * 4)];
+      const op = ops[Math.floor(Math.random() * 4)];
       
       if (op === 'add') {
-        num1 = Math.floor(Math.random() * 50) + 1;
-        num2 = Math.floor(Math.random() * 50) + 1;
+        num1 = Math.floor(Math.random() * 40) + 1;
+        num2 = Math.floor(Math.random() * 40) + 1;
         answer = num1 + num2;
         problemText = `${num1} + ${num2} = ?`;
       } else if (op === 'sub') {
-        num1 = Math.floor(Math.random() * 100) + 50;
+        num1 = Math.floor(Math.random() * 80) + 20;
         num2 = Math.floor(Math.random() * num1);
         answer = num1 - num2;
         problemText = `${num1} - ${num2} = ?`;
@@ -196,18 +194,18 @@ class HenriettaGame {
       }
     }
     
-    this.currentProblem = { num1, num2, answer, problemText, operation: this.currentOperation };
+    this.currentProblem = { num1, num2, answer, problemText };
     document.getElementById('problem').textContent = problemText;
     this.generateAnswers(answer);
+    this.resetQuestionTimer();
   }
   
   generateAnswers(correctAnswer) {
     const answers = new Set([correctAnswer]);
     
-    // Generate 3 wrong answers
     while (answers.size < 4) {
       let wrong;
-      const offset = Math.floor(Math.random() * 10) + 1;
+      const offset = Math.floor(Math.random() * 15) + 1;
       if (Math.random() < 0.5) {
         wrong = correctAnswer + offset;
       } else {
@@ -223,37 +221,37 @@ class HenriettaGame {
     
     answerArray.forEach(ans => {
       const btn = document.createElement('button');
-      btn.className = 'answer-btn';
+      btn.className = 'answer-btn-railroad';
       btn.textContent = ans;
-      btn.onclick = () => this.checkAnswer(ans);
+      btn.onclick = (e) => this.checkAnswer(ans, e.target);
       grid.appendChild(btn);
     });
   }
   
-  checkAnswer(selectedAnswer) {
-    const buttons = document.querySelectorAll('.answer-btn');
-    buttons.forEach(btn => btn.disabled = true);
+  checkAnswer(selectedAnswer, btn) {
+    const buttons = document.querySelectorAll('.answer-btn-railroad');
+    buttons.forEach(b => b.disabled = true);
+    
+    this.stopQuestionTimer();
     
     if (selectedAnswer === this.currentProblem.answer) {
-      // Correct answer
-      event.target.classList.add('correct');
-      document.getElementById('feedback').textContent = 'Great job! ⭐';
+      btn.classList.add('correct');
+      document.getElementById('feedback').textContent = 'Correct! Choo-Choo! 🚂';
       document.getElementById('feedback').style.color = '#4CAF50';
       this.score += 10;
+      this.correctAnswers++;
       
       if (this.soundEnabled) {
         this.playSound('correct');
       }
       
       setTimeout(() => {
-        this.completeQuestion();
-      }, 1000);
+        this.nextQuestion();
+      }, 1500);
     } else {
-      // Wrong answer
-      event.target.classList.add('wrong');
-      document.getElementById('feedback').textContent = 'Try again! 💪';
+      btn.classList.add('wrong');
+      document.getElementById('feedback').textContent = 'Try again! All aboard! 🚂';
       document.getElementById('feedback').style.color = '#f44336';
-      this.lives--;
       
       if (this.soundEnabled) {
         this.playSound('wrong');
@@ -261,123 +259,121 @@ class HenriettaGame {
       
       setTimeout(() => {
         document.getElementById('feedback').textContent = '';
-        buttons.forEach(btn => {
-          btn.disabled = false;
-          btn.classList.remove('wrong');
+        buttons.forEach(b => {
+          b.disabled = false;
+          b.classList.remove('wrong');
         });
         this.generateProblem();
-        this.resetTimer();
+        this.startQuestionTimer();
       }, 1500);
-      
-      if (this.lives <= 0) {
-        setTimeout(() => {
-          alert('Game Over! Try again!');
-          this.stopTimer();
-          this.showScreen('level-screen');
-          this.updateLevelMap();
-        }, 2000);
-      }
     }
     
     this.updateGameUI();
   }
   
-  completeQuestion() {
+  nextQuestion() {
     document.getElementById('feedback').textContent = '';
     
-    // Complete the step after 5 correct answers
-    if (!this.stepProgress) this.stepProgress = 0;
-    this.stepProgress++;
-    
-    if (this.stepProgress >= 5) {
-      // Step completed
-      if (!this.completedSteps.includes(this.currentStep)) {
-        this.completedSteps.push(this.currentStep);
-      }
-      this.stepProgress = 0;
-      this.stopTimer();
-      alert(`Great! You completed this challenge and recovered an item!`);
-      this.showScreen('level-screen');
-      this.updateLevelMap();
-      
-      // Check if all steps completed
-      if (this.completedSteps.length >= 4) {
-        setTimeout(() => {
-          this.showVictory();
-        }, 500);
-      }
+    if (this.correctAnswers >= this.totalQuestions) {
+      // Game complete
+      this.stopTimers();
+      setTimeout(() => {
+        this.showVictory();
+      }, 500);
     } else {
       this.generateProblem();
-      this.resetTimer();
+      this.startQuestionTimer();
     }
   }
   
-  startTimer() {
-    this.currentTime = this.timePerQuestion;
-    document.getElementById('timer').textContent = this.currentTime;
+  startQuestionTimer() {
+    this.timeLeft = 100;
+    const timeBar = document.getElementById('time-bar-fill');
+    timeBar.style.width = '100%';
+    timeBar.style.background = 'linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%)';
     
-    if (this.timerInterval) clearInterval(this.timerInterval);
+    if (this.questionTimer) clearInterval(this.questionTimer);
     
-    this.timerInterval = setInterval(() => {
-      this.currentTime--;
-      document.getElementById('timer').textContent = this.currentTime;
+    const speedFactor = this.trainSpeed / 5;
+    const intervalTime = 100 / (speedFactor * 2); // Adjust timer based on speed
+    
+    this.questionTimer = setInterval(() => {
+      this.timeLeft -= 1;
+      timeBar.style.width = this.timeLeft + '%';
       
-      if (this.currentTime <= 10) {
-        document.getElementById('timer').style.color = '#f44336';
+      if (this.timeLeft <= 30) {
+        timeBar.style.background = 'linear-gradient(90deg, #f44336 0%, #ff9800 100%)';
+      } else if (this.timeLeft <= 50) {
+        timeBar.style.background = 'linear-gradient(90deg, #ff9800 0%, #ffc107 100%)';
       }
       
-      if (this.currentTime <= 0) {
+      if (this.timeLeft <= 0) {
         this.timeUp();
       }
-    }, 1000);
+    }, intervalTime);
   }
   
-  resetTimer() {
-    this.currentTime = this.timePerQuestion;
-    document.getElementById('timer').textContent = this.currentTime;
-    document.getElementById('timer').style.color = '#2d5f3b';
+  resetQuestionTimer() {
+    if (this.questionTimer) {
+      clearInterval(this.questionTimer);
+    }
+    this.startQuestionTimer();
   }
   
-  stopTimer() {
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-      this.timerInterval = null;
+  stopQuestionTimer() {
+    if (this.questionTimer) {
+      clearInterval(this.questionTimer);
+      this.questionTimer = null;
     }
   }
   
   timeUp() {
-    this.stopTimer();
-    alert("Time's up! The parrot is getting closer!");
-    this.lives--;
-    this.updateGameUI();
+    this.stopQuestionTimer();
+    document.getElementById('feedback').textContent = 'Too slow! Chugga-Chugga... 🚂';
+    document.getElementById('feedback').style.color = '#f44336';
     
-    if (this.lives <= 0) {
-      alert('Game Over! Try again!');
-      this.showScreen('level-screen');
-      this.updateLevelMap();
-    } else {
-      this.generateProblem();
-      this.startTimer();
+    if (this.soundEnabled) {
+      this.playSound('wrong');
     }
+    
+    setTimeout(() => {
+      document.getElementById('feedback').textContent = '';
+      this.generateProblem();
+      this.startQuestionTimer();
+    }, 2000);
   }
   
   updateGameUI() {
     document.getElementById('score').textContent = this.score;
-    document.getElementById('lives').textContent = this.lives;
+    document.getElementById('correct').textContent = this.correctAnswers;
+    document.getElementById('total').textContent = this.totalQuestions;
+    
+    const levelName = this.ageLevel === '5-8' ? 'Short Route' : 'Express Route';
+    document.getElementById('level-name').textContent = levelName;
   }
   
   showVictory() {
+    document.getElementById('final-correct').textContent = this.correctAnswers;
     document.getElementById('final-score').textContent = this.score;
-    document.getElementById('final-items').textContent = this.completedSteps.length;
     this.showScreen('victory-screen');
+    
+    if (this.soundEnabled) {
+      this.playSound('victory');
+    }
   }
   
   resetGame() {
-    this.completedSteps = [];
     this.score = 0;
-    this.lives = 3;
-    this.stepProgress = 0;
-    this.updateLevelMap();
+    this.correctAnswers = 0;
+    this.trainPosition = -200;
+    if (this.questionTimer) clearInterval(this.questionTimer);
+  }
+  
+  stopTimers() {
+    if (this.questionTimer) {
+      clearInterval(this.questionTimer);
+      this.questionTimer = null;
+    }
   }
   
   showScreen(screenId) {
@@ -395,7 +391,6 @@ class HenriettaGame {
   }
   
   playSound(type) {
-    // Simple Web Audio API sound effects
     try {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
@@ -404,19 +399,39 @@ class HenriettaGame {
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
-      if (type === 'correct') {
-        oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-        oscillator.frequency.exponentialRampToValueAtTime(1046.5, audioContext.currentTime + 0.3); // C6
+      if (type === 'whistle') {
+        // Train whistle sound
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+        oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.3);
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+      } else if (type === 'correct') {
+        oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(784, audioContext.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.2);
       } else if (type === 'wrong') {
         oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.3);
+        oscillator.frequency.exponentialRampToValueAtTime(150, audioContext.currentTime + 0.3);
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+      } else if (type === 'victory') {
+        // Victory chime
+        oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1);
+        oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.4);
       }
-      
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.3);
     } catch (e) {
       // Audio not supported
     }
@@ -425,5 +440,5 @@ class HenriettaGame {
 
 // Initialize the game when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  window.henriettaGame = new HenriettaGame();
+  window.henriettaRailroad = new HenriettaRailroad();
 });

@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Hooray for Henrietta - Math Adventure</title>
+  <title>Goofy Henrietta's Railroad</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="description" content="A modern version of the classic educational math game Hooray for Henrietta - help rescue Hopeless Henry!">
-  <meta name="theme-color" content="#2d5f3b">
+  <meta name="description" content="Goofy Henrietta's Railroad - A math adventure on the rails!">
+  <meta name="theme-color" content="#8B4513">
   
   <!-- iOS Safari Web App Support -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Henrietta">
+  <meta name="apple-mobile-web-app-title" content="Henrietta Railroad">
   
   <!-- PWA Web App Manifest -->
   <link rel="manifest" href="manifest.json">
@@ -22,123 +22,111 @@
   <div id="title-screen" class="screen active">
     <div class="title-container">
       <div class="title-characters">
+        <div class="char goofy">🐕</div>
+        <div class="char train-icon">🚂</div>
         <div class="char henrietta">👧</div>
-        <div class="char henry">👦</div>
-        <div class="char parrot">🦜</div>
       </div>
-      <h1 class="game-title">Hooray for Henrietta!</h1>
-      <p class="game-subtitle">A Math Adventure</p>
+      <h1 class="game-title">Goofy Henrietta's Railroad</h1>
+      <p class="game-subtitle">All Aboard for Math Fun!</p>
       
       <div class="story-preview">
-        <p><strong>Oh no!</strong> John the Parrot has stolen Hopeless Henry's clothes and kidnapped him!</p>
-        <p>Help Henrietta solve math problems to rescue Henry before he gets covered in cold custard!</p>
+        <p><strong>Chugga-Chugga-Chugga-Chugga...</strong></p>
+        <p>Climb aboard Engineer Goofy's train with Henrietta for a math adventure! Solve the problems before the train passes the station!</p>
       </div>
       
       <div class="age-selection">
-        <h2>Select Your Level</h2>
+        <h2>Select Your Route</h2>
         <button class="level-btn" data-level="5-8">
-          <div class="level-title">Ages 5-8</div>
+          <div class="level-title">🛤️ Short Route (Ages 5-8)</div>
           <div class="level-desc">Addition & Subtraction</div>
         </button>
         <button class="level-btn" data-level="9-12">
-          <div class="level-title">Ages 9-12</div>
+          <div class="level-title">🚄 Express Route (Ages 9-12)</div>
           <div class="level-desc">All Operations</div>
         </button>
       </div>
       
       <div class="settings-row">
-        <button id="btn-settings-title" class="btn-secondary">⚙️ Settings</button>
+        <button id="btn-settings-title" class="btn-secondary">⚙️ Train Controls</button>
       </div>
     </div>
   </div>
 
-  <!-- Level Select Screen -->
-  <div id="level-screen" class="screen">
-    <div class="screen-header">
-      <button id="btn-back-title" class="btn-back">← Back</button>
-      <h1>Choose Your Adventure</h1>
-      <div class="spacer"></div>
-    </div>
-    
-    <div class="adventure-map">
-      <div class="adventure-step" data-step="1" data-operation="add">
-        <div class="step-icon">🏃</div>
-        <div class="step-info">
-          <div class="step-title">The Chase</div>
-          <div class="step-desc">Addition Adventure</div>
-        </div>
-        <div class="step-status">🔒</div>
-      </div>
-      
-      <div class="adventure-step" data-step="2" data-operation="sub">
-        <div class="step-icon">🚣</div>
-        <div class="step-info">
-          <div class="step-title">Row Across</div>
-          <div class="step-desc">Subtraction Quest</div>
-        </div>
-        <div class="step-status">🔒</div>
-      </div>
-      
-      <div class="adventure-step" data-step="3" data-operation="mul">
-        <div class="step-icon">🏃‍♀️</div>
-        <div class="step-info">
-          <div class="step-title">The Hurdles</div>
-          <div class="step-desc">Multiplication Challenge</div>
-        </div>
-        <div class="step-status">🔒</div>
-      </div>
-      
-      <div class="adventure-step" data-step="4" data-operation="div">
-        <div class="step-icon">💥</div>
-        <div class="step-info">
-          <div class="step-title">Rescue Mission</div>
-          <div class="step-desc">Division & Final Battle</div>
-        </div>
-        <div class="step-status">🔒</div>
-      </div>
-    </div>
-    
-    <div class="progress-info">
-      <div>Items Recovered: <span id="items-recovered">0</span>/4</div>
-      <div>Level: <span id="current-age-level">Ages 5-8</span></div>
+  <!-- Get Ready Screen -->
+  <div id="getready-screen" class="screen">
+    <div class="getready-container">
+      <h1 class="getready-text">GET READY!</h1>
+      <div class="countdown" id="countdown">3</div>
+      <p class="all-aboard">All Aboard!</p>
     </div>
   </div>
 
   <!-- Game Screen -->
   <div id="game-screen" class="screen">
     <div class="game-header">
-      <button id="btn-back-levels" class="btn-back">← Map</button>
-      <div class="game-title-small">Hooray for Henrietta!</div>
+      <button id="btn-back-title" class="btn-back">← Station</button>
+      <div class="game-title-small">Goofy Henrietta's Railroad</div>
       <div class="game-stats">
-        <div class="stat">⏱️ <span id="timer">60</span>s</div>
+        <div class="stat">🚂 <span id="level-name">Short Route</span></div>
         <div class="stat">⭐ <span id="score">0</span></div>
-        <div class="stat">❤️ <span id="lives">3</span></div>
+        <div class="stat">🎯 <span id="correct">0</span>/<span id="total">10</span></div>
       </div>
     </div>
     
-    <div class="game-area">
-      <div class="story-panel">
-        <div class="character-scene">
-          <div id="scene-henrietta" class="scene-char">👧</div>
-          <div id="scene-parrot" class="scene-char">🦜</div>
-          <div id="scene-henry" class="scene-char">👦</div>
-          <div id="custard-tank" class="custard">🍮</div>
-        </div>
-        <div class="scene-text" id="scene-text">
-          Help Henrietta rescue Henry!
+    <div class="railroad-scene">
+      <div class="sky"></div>
+      <div class="clouds">
+        <div class="cloud">☁️</div>
+        <div class="cloud">☁️</div>
+        <div class="cloud">☁️</div>
+      </div>
+      
+      <div class="landscape">
+        <div class="hills"></div>
+        <div class="trees">🌲 🌳 🌲</div>
+      </div>
+      
+      <div class="railroad-track">
+        <div class="track"></div>
+        <div class="ties"></div>
+      </div>
+      
+      <div class="train-container" id="train-container">
+        <div class="train">
+          <div class="engine">
+            <div class="smoke" id="smoke">💨</div>
+            <div class="cab">🚂</div>
+            <div class="wheel front-wheel"></div>
+            <div class="wheel back-wheel"></div>
+          </div>
+          <div class="car">🚃</div>
+          <div class="car">🚃</div>
         </div>
       </div>
       
-      <div class="math-panel">
-        <div class="problem-display">
-          <div id="problem" class="problem">5 + 3 = ?</div>
+      <div class="station">
+        <div class="platform"></div>
+        <div class="station-sign">🚉 MATH STATION</div>
+        <div class="passenger" id="passenger">🐭</div>
+      </div>
+    </div>
+    
+    <div class="math-panel-railroad">
+      <div class="problem-display-railroad">
+        <div id="problem" class="problem-railroad">5 + 3 = ?</div>
+      </div>
+      
+      <div class="answer-grid-railroad" id="answer-grid">
+        <!-- Answers will be populated by JavaScript -->
+      </div>
+      
+      <div class="feedback-railroad" id="feedback"></div>
+      
+      <div class="time-bar-container">
+        <div class="time-bar-label">Time to Answer:</div>
+        <div class="time-bar-bg">
+          <div class="time-bar-fill" id="time-bar-fill"></div>
         </div>
-        
-        <div class="answer-grid" id="answer-grid">
-          <!-- Answers will be populated by JavaScript -->
-        </div>
-        
-        <div class="feedback" id="feedback"></div>
       </div>
     </div>
   </div>
@@ -146,21 +134,19 @@
   <!-- Victory Screen -->
   <div id="victory-screen" class="screen">
     <div class="victory-container">
-      <h1 class="victory-title">🎉 Hooray! 🎉</h1>
-      <p class="victory-message">You rescued Hopeless Henry!</p>
+      <h1 class="victory-title">🎉 ALL ABOARD SUCCESS! 🎉</h1>
+      <p class="victory-message">Chugga-Chugga-Chugga-Chugga-CHOO-CHOO!</p>
       
-      <div class="victory-characters">
-        <span>👧</span> 💕 <span>👦</span>
-      </div>
+      <div class="victory-train">🚂🚃🚃</div>
       
-      <p class="victory-subtext">The wedding can go ahead!</p>
+      <p class="victory-subtext">All passengers have been picked up!</p>
       
       <div class="victory-stats">
-        <div>Total Score: <span id="final-score">0</span></div>
-        <div>Items Recovered: <span id="final-items">4</span>/4</div>
+        <div>Correct Answers: <span id="final-correct">0</span></div>
+        <div>Score: <span id="final-score">0</span></div>
       </div>
       
-      <button id="btn-play-again" class="btn-primary">Play Again</button>
+      <button id="btn-play-again" class="btn-primary">Ride Again</button>
     </div>
   </div>
 
@@ -169,21 +155,22 @@
     <div class="modal-backdrop"></div>
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Settings</h2>
+        <h2>🚂 Train Controls</h2>
         <button class="modal-close">&times;</button>
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label for="setting-timer">Time per Question</label>
-          <select id="setting-timer" class="form-select">
-            <option value="60">60 seconds</option>
-            <option value="45">45 seconds</option>
-            <option value="90">90 seconds (Easy)</option>
-            <option value="30">30 seconds (Hard)</option>
-          </select>
+          <label for="setting-speed">Train Speed</label>
+          <input type="range" id="setting-speed" class="speed-slider" min="1" max="10" value="5" step="1">
+          <div class="speed-labels">
+            <span>🐢 Slow</span>
+            <span>Normal</span>
+            <span>🚄 Fast</span>
+          </div>
+          <div class="speed-value">Speed: <span id="speed-display">5</span></div>
         </div>
         <div class="form-group">
-          <label for="setting-sound">Sound Effects</label>
+          <label for="setting-sound">Train Whistle & Sounds</label>
           <select id="setting-sound" class="form-select">
             <option value="on">On</option>
             <option value="off">Off</option>

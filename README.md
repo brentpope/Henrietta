@@ -1,32 +1,39 @@
-# Hooray for Henrietta! - Math Adventure
+# Goofy Henrietta's Railroad
 
-A modern web version of the classic educational math game "Hooray for Henrietta" (1990) by Scetlander.
+A modern blend of the classic "Goofy's Railway Express" (1990) and math education games! All aboard for a math adventure on the rails.
 
-## About the Original
+## About
 
-'Hooray for Henrietta' was an educational game where Henrietta needed to rescue her boyfriend Hopeless Henry, who had been kidnapped by the mischievous parrot John. To save him, players had to solve math problems (addition, subtraction, multiplication, division) across different activities, racing against time or Henry would be covered in cold custard!
+Inspired by the beloved Disney educational game "Goofy's Railway Express" where children learned color and shape matching with Goofy and Mickey's train, this game combines that wonderful train theme with math problem solving just like the classic "Hooray for Henrietta".
 
-## Our Modern Version
+## Features
 
-This web-based remake brings the classic adventure to modern devices with:
-
-- **Two Age Levels**: Ages 5-8 (Addition & Subtraction) and Ages 9-12 (All Operations)
-- **Four Adventure Stages**: The Chase, Row Across, The Hurdles, and the Final Rescue Mission
-- **Interactive Story**: Follow Henrietta's adventure with animated characters
-- **Timer-Based Challenge**: Race against time to solve math problems
-- **Lives System**: Three chances to get it right
-- **Progress Tracking**: Unlock stages as you complete them
+- **Train Theme**: Chug along with Engineer Goofy's train through scenic countryside
+- **"GET READY!"**: Classic countdown just like the original games
+- **Math on the Rails**: Solve addition, subtraction, multiplication, and division problems
+- **Multiple Choice**: Four answer choices like classic edutainment games
+- **Speed Control**: Adjustable train speed slider (1-10) to make it easier or more challenging
+- **Two Routes**: Short Route (Ages 5-8, + and -) and Express Route (Ages 9-12, all operations)
+- **Time Pressure**: Answer before time runs out with a visual time bar
+- **Scenic Animation**: Rolling hills, clouds, trees, and a moving train
+- **Sound Effects**: Train whistles, correct/wrong answers, and victory chimes
 - **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **Sound Effects**: Audio feedback for correct and wrong answers
 - **PWA Ready**: Can be installed as a web app
 
 ## How to Play
 
-1. **Start**: Choose your age level (5-8 or 9-12)
-2. **Adventure Map**: Complete stages in order to rescue Henry
-3. **Solve Problems**: Answer math questions before time runs out
-4. **Collect Items**: Each completed stage recovers one of Henry's stolen items
-5. **Rescue Henry**: Complete all 4 stages to save the wedding!
+1. **Board the Train**: Choose your route (Short or Express)
+2. **Get Ready**: Watch the countdown and hear the train whistle
+3. **Solve Problems**: Math questions appear as your train travels
+4. **Pick the Right Answer**: Click the correct answer from four choices
+5. **Beat the Clock**: Answer before time runs out or the train passes!
+6. **Complete the Route**: Get 10 correct answers to complete your journey
+7. **Chug to Victory**: Celebrate with Choo-Choo!
+
+## Train Controls (Settings)
+
+- **Train Speed**: Adjust from Slow (🐢) to Fast (🚄) - affects how quickly time runs out
+- **Train Whistle & Sounds**: Toggle sound effects on/off
 
 ## Running the Game
 
@@ -42,23 +49,25 @@ Just open `index.html` directly in your web browser
 
 ## Game Mechanics
 
-- **Ages 5-8**: Focus on addition and subtraction with numbers 1-50
-- **Ages 9-12**: All four operations (addition, subtraction, multiplication, division)
+- **Short Route (Ages 5-8)**: Addition and subtraction, numbers 1-40
+- **Express Route (Ages 9-12)**: All four operations, larger numbers
 - **Scoring**: 10 points per correct answer
-- **Lives**: Start with 3 lives, lose one for wrong answers or timeouts
-- **Time**: Configurable per question (30-90 seconds)
-- **Progression**: Must get 5 correct answers per stage to complete it
+- **Goal**: Get 10 correct answers to complete the route
+- **Timer**: Visual time bar that speeds up with faster train speeds
+- **Feedback**: Immediate feedback with train-themed messages
 
 ## Technologies Used
 
 - Pure HTML5, CSS3, and JavaScript (no frameworks)
-- CSS animations and transitions
-- Web Audio API for sound effects
+- CSS animations for train movement, clouds, and smoke
+- Web Audio API for train sounds and effects
 - Responsive design with CSS Grid and Flexbox
 - Local storage for settings
 
-## Original Credits
+## Credits
 
-Original game by T.R. Tulloch, published by Scetlander Ltd. in 1990 for DOS, Amiga, Atari ST, and ZX Spectrum.
+Inspired by:
+- **Goofy's Railway Express** (1990) by Westwood Associates, published by Disney Software
+- **Hooray for Henrietta** (1990) by T.R. Tulloch, published by Scetlander Ltd.
 
-This is a fan-made modern tribute to this classic educational game.
+This is a fan-made tribute combining the best elements of both classic educational games.
